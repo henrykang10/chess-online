@@ -1,0 +1,4 @@
+streamlit
+chess
+firebase-admin
+streamlit-autorefresh
