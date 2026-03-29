@@ -72,7 +72,7 @@ st.sidebar.markdown("---")
 st.sidebar.info("Share this page with your opponent. They select **Black**.")
 
 # ── 4. Title ──────────────────────────────────────────────────────────────────
-st.markdown("<h1 style='text-align:center;color:#e0e0e0;'>♟ Play Chess with Henry</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center;color:#e0e0e0;'>♟ Henry's Chessboard</h1>", unsafe_allow_html=True)
 
 # ── 5. Full game component ────────────────────────────────────────────────────
 component_html = f"""<!DOCTYPE html>
