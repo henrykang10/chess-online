@@ -6,7 +6,7 @@ from firebase_admin import credentials, firestore
 import json
 
 # ── 1. SETUP — works both locally (firebase_key.json) and on Streamlit Cloud (st.secrets) ──
-st.set_page_config(page_title="♟ ChessOnline", layout="centered")
+st.set_page_config(page_title="♟ Henry's Chessboard", layout="centered")
 
 if not firebase_admin._apps:
     try:
@@ -54,7 +54,7 @@ h1, h2, h3, p, label { color: #e0e0e0 !important; }
 """, unsafe_allow_html=True)
 
 # ── 3. Sidebar ────────────────────────────────────────────────────────────────
-st.sidebar.markdown("## ♟ ChessOnline")
+st.sidebar.markdown("## Play Chess with Henry")
 st.sidebar.markdown("---")
 role = st.sidebar.radio("**Playing as**", ["White", "Black", "Spectator"])
 st.sidebar.markdown("---")
@@ -72,7 +72,7 @@ st.sidebar.markdown("---")
 st.sidebar.info("Share this page with your opponent. They select **Black**.")
 
 # ── 4. Title ──────────────────────────────────────────────────────────────────
-st.markdown("<h1 style='text-align:center;color:#e0e0e0;'>♟ Play Chess Online</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center;color:#e0e0e0;'>♟ Play Chess with Henry</h1>", unsafe_allow_html=True)
 
 # ── 5. Full game component ────────────────────────────────────────────────────
 component_html = f"""<!DOCTYPE html>
