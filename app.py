@@ -17,19 +17,27 @@ if not firebase_admin._apps:
         cred = credentials.Certificate(key_dict)
     except (KeyError, FileNotFoundError):
         # Local: read from file
-        cred = credentials.Certificate("firebase_key.json")
+        try:
+            cred = credentials.Certificate("firebase_key.json")
+        except:
+            st.error("Firebase credentials not found. Please check your Secrets or local JSON file.")
+            st.stop()
     firebase_admin.initialize_app(cred)
 
 # Get project_id for REST URL
 try:
     PROJECT_ID = st.secrets["firebase"]["project_id"]
 except Exception:
-    with open("firebase_key.json") as f:
-        PROJECT_ID = json.load(f)["project_id"]
+    try:
+        with open("firebase_key.json") as f:
+            PROJECT_ID = json.load(f)["project_id"]
+    except:
+        PROJECT_ID = "your-project-id"
 
 db = firestore.client()
 doc_ref = db.collection("games").document("match_1")
 
+# The REST URL used by the Javascript component to pull updates without a full Streamlit rerun
 FIREBASE_REST = f"https://firestore.googleapis.com/v1/projects/{PROJECT_ID}/databases/(default)/documents/games/match_1"
 
 # ── 2. Dark mode CSS ──────────────────────────────────────────────────────────
@@ -338,26 +346,32 @@ async function saveFen(fen) {{
 }}
 
 async function loadFen() {{
+  // If it's your turn and you're selecting a piece, don't interrupt with a refresh
+  if(isMyTurn() && sel !== null) return;
+
   try {{
     const data=await(await fetch(REST_URL)).json();
     const fen=data?.fields?.fen?.stringValue;
     if(fen&&fen!==lastFen){{
       lastFen=fen; chess.load(fen);
       const newMoves=chess.history();
-      if(newMoves.length>moveList.length){{
-        const tmp=new Chess();
-        newMoves.slice(0,-1).forEach(m=>tmp.move(m));
-        const lr=tmp.move(newMoves[newMoves.length-1]);
-        if(lr){{
-          lastMove={{from:(parseInt(lr.from[1])-1)*8+(lr.from.charCodeAt(0)-97),
-                    to:(parseInt(lr.to[1])-1)*8+(lr.to.charCodeAt(0)-97)}};
-          if(newMoves.length>moveList.length) moveList=newMoves.slice();
+      if(newMoves.length > 0){{
+          const tmp = new Chess();
+          newMoves.slice(0, -1).forEach(m => tmp.move(m));
+          const lr = tmp.move(newMoves[newMoves.length-1]);
+          if(lr){{
+              lastMove={{from:(parseInt(lr.from[1])-1)*8+(lr.from.charCodeAt(0)-97),
+                        to:(parseInt(lr.to[1])-1)*8+(lr.to.charCodeAt(0)-97)}};
+          }}
+      }}
+      moveList=newMoves.slice();
+      sel=null; legalT=new Set(); startTimer(); render();
+      // Only play sounds if it was actually the other person's move
+      if(!isMyTurn()) {{
           if(chess.in_checkmate()) playEnd();
           else if(chess.in_check()) playCheck();
-          else if(lr.captured) playCapture();
+          else if(chess.history({{verbose:true}}).pop()?.captured) playCapture();
           else playMove();
-        }}
-        sel=null;legalT=new Set();startTimer();render();
       }}
     }}
   }}catch(e){{}}
@@ -365,7 +379,8 @@ async function loadFen() {{
 
 wTime=INIT_SECONDS; bTime=INIT_SECONDS;
 loadFen().then(()=>{{render();startTimer();}});
-setInterval(loadFen,1500);
+// Auto-refresh every 1.5 seconds to catch opponent moves
+setInterval(loadFen, 1500);
 </script>
 </body>
 </html>"""
